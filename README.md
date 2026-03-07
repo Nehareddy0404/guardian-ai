@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🛡️ Community Guardian — AI-Powered Community Safety & Digital Wellness
+# 🛡️ Community Guardian — AI-Powered neighbourhood Safety & Digital Wellness
 
 ![React](https://img.shields.io/badge/React_19-61DAFB?style=for-the-badge&logo=react&logoColor=black)
 ![OpenAI](https://img.shields.io/badge/OpenAI-412991?style=for-the-badge&logo=openai&logoColor=white)
