@@ -164,6 +164,4 @@ community-guardian/
 
 <div align="center">
 
-Made with 💚 in Buffalo, NY
-
 </div>
