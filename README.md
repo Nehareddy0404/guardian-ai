@@ -28,8 +28,8 @@
 
 ### Run Commands
 ```bash
-git clone https://github.com/Nehareddy0404/community-guardian.git
-cd community-guardian
+git clone https://github.com/Nehareddy0404/guardian-ai.git
+cd guardian-ai
 npm install
 
 cp .env.example .env
@@ -222,6 +222,6 @@ community-guardian/
 
 <div align="center">
 
-Made with 💚 in Buffalo, NY
+Made for safer communities
 
 </div>
