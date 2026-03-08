@@ -269,7 +269,7 @@ export default function App() {
           <div style={{ textAlign: "center", marginBottom: 32 }}>
             <div style={{ display: "inline-block", background: colors.greenBg, border: "1px solid rgba(0,255,136,0.2)", borderRadius: 30, padding: "5px 16px", fontSize: 11, color: colors.green, marginBottom: 14, fontWeight: 700, fontFamily: "'JetBrains Mono',monospace", letterSpacing: 1 }}>◈ AI-POWERED THREAT INTELLIGENCE</div>
             <h1 style={{ fontSize: elderly ? 44 : 40, fontWeight: 900, margin: "0 0 10px", background: "linear-gradient(135deg, #00ff88 0%, #00e5ff 50%, #a855f7 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", fontFamily: "'Inter',sans-serif" }}>GuardianAI</h1>
-            <p style={{ color: colors.textDim, fontSize: elderly ? 16 : 14, maxWidth: 500, margin: "0 auto" }}>AI-powered noise filtering delivers calm, verified, actionable safety intelligence.</p>
+            <p style={{ color: colors.textDim, fontSize: elderly ? 16 : 14, maxWidth: 500, margin: "0 auto" }}>AI for community safety — noise filtering delivers calm, verified, actionable intelligence.</p>
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "200px 1fr", gap: 16, marginBottom: 24 }}>
