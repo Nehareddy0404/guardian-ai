@@ -2,7 +2,7 @@
 
 ## 1. Project Overview
 
-GuardianAI is a neighborhood safety platform built for the "Community Safety & Digital Wellness" case study. The core problem: people are overwhelmed by scattered safety information across news sites and social media, leading to either alert fatigue or unnecessary anxiety.
+GuardianAI is a neighborhood safety platform focused on community safety and digital wellness. The core problem: people are overwhelmed by scattered safety information across news sites and social media, leading to either alert fatigue or unnecessary anxiety.
 
 This app solves that by aggregating local safety data and using AI to filter noise from signal — turning messy community reports into calm, actionable safety digests.
 
@@ -12,7 +12,7 @@ The app is built in React, uses OpenAI GPT-3.5 for AI features, and is themed ar
 
 ## 2. Target Audience
 
-The problem statement defines three user groups. Here's how each is served:
+I designed for three specific user groups. Here's how each is served:
 
 ### Neighborhood Groups
 **Need:** Track local trends without social media toxicity  
@@ -102,7 +102,7 @@ The problem statement defines three user groups. Here's how each is served:
 ### Elderly-Friendly Mode
 - A single toggle (👁️ A+ in navbar) increases font sizes across every element
 - Bigger buttons, more readable text, higher contrast
-- Serves the elderly target audience from the problem statement
+- Serves the elderly target audience directly
 
 ### Location-Based Everything
 - Dashboard, safety score, trend chart — all filtered by selected location
