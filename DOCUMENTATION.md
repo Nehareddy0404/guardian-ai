@@ -245,7 +245,43 @@ Instead of showing "AI unavailable, try again later", I built complete rule-base
 
 ---
 
-## 11. What I'd Build Next
+## 11. Responsible AI
+
+GuardianAI uses AI to help communities stay safe, but AI must be used responsibly. Here's how we approach ethical considerations, security, and limitations:
+
+### Ethical Considerations
+- **Calm, non-alarmist language** — AI-generated summaries and alerts are designed to inform, not frighten. We deliberately avoid fear-based messaging that could cause unnecessary panic in communities.
+- **No profiling or discrimination** — The system reports on incidents by location and type only. It never profiles individuals, demographics, or communities. Safety scores reflect incident data, not judgments about neighborhoods or people.
+- **Human oversight** — AI outputs are clearly labeled. Users always see whether results are "AI-powered" or "Rule-based," empowering them to apply their own judgment rather than blindly trusting automated analysis.
+- **Inclusive design** — Elderly Mode ensures the platform is accessible to older adults who are disproportionately targeted by scams. The app serves all community members, not just tech-savvy users.
+
+### Bias Awareness
+- **Training data limitations** — GPT-3.5 may carry biases from its training data. Scam detection and threat categorization could reflect biases in how security incidents are reported in training corpora.
+- **Synthetic test data** — Our 25 sample incidents are hand-written to be balanced across digital and physical threat types, avoiding over-representation of any category.
+- **Rule-based fallbacks as bias mitigation** — When AI is unavailable, the rule-based alternatives use transparent, auditable keyword matching. Users can inspect exactly why a report was categorized a certain way.
+
+### Transparency
+- **Clear AI labeling** — Every AI-generated result displays a visible badge indicating whether it was produced by AI or by rule-based logic. Users are never misled about the source of analysis.
+- **No black-box decisions** — Safety scores use a documented, deterministic algorithm (base score minus recency-weighted severity penalties). The formula is explained in this documentation and produces consistent, reproducible results.
+- **Open source** — The entire codebase is available for inspection on GitHub. Nothing is hidden behind proprietary services.
+
+### Data Privacy & Security
+- **No personal data collection** — The app collects zero personal information. All incident data is synthetic.
+- **No tracking** — No analytics, cookies, or external tracking scripts are used.
+- **API key protection** — OpenAI API keys are stored in `.env` files excluded from version control via `.gitignore`.
+- **Client-side processing** — All data processing happens in the browser. No user data is sent to external servers (except OpenAI API calls for AI features, which contain only incident text — never user information).
+- **Input sanitization** — React's built-in JSX escaping protects against XSS attacks.
+
+### Known Limitations
+- **AI accuracy is not guaranteed** — GPT-3.5 may occasionally miscategorize threats, miss scam patterns, or generate inaccurate forecasts. Users should treat AI outputs as supplementary information, not definitive assessments.
+- **No real-time data** — The app works with static sample data and does not connect to live incident feeds or emergency services.
+- **No encryption** — Safe Circles displays "encrypted" badges for UI demonstration purposes, but does not implement actual end-to-end encryption. Users should not share sensitive personal information through this feature.
+- **Single-user demo** — There is no authentication or authorization system. In a production environment, role-based access control would be essential to prevent misuse.
+- **Geographic scope** — Current data is limited to Buffalo, NY neighborhoods. The system has not been tested for scalability across broader regions.
+
+---
+
+## 12. What I'd Build Next
 
 If I had more time:
 - **PostgreSQL backend** — persistent data so reports don't disappear on refresh
