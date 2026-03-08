@@ -1,184 +1,257 @@
 # Design Documentation — Community Guardian
 
-## Overview
+## 1. Project Overview
 
-Community Guardian is a neighborhood safety platform that uses AI to cut through noisy community reports and surface what actually matters. Instead of doom-scrolling through social media posts about local crime, users get a clean dashboard with verified alerts, safety scores, and actionable steps.
+Community Guardian is a neighborhood safety platform built for the "Community Safety & Digital Wellness" case study. The core problem: people are overwhelmed by scattered safety information across news sites and social media, leading to either alert fatigue or unnecessary anxiety.
 
-The idea came from the problem statement: people are overwhelmed by scattered safety info across news and social media. This app brings it all into one calm, organized place.
+This app solves that by aggregating local safety data and using AI to filter noise from signal — turning messy community reports into calm, actionable safety digests.
 
----
-
-## Target Audience
-
-I designed for three specific user groups:
-
-1. **Neighborhood groups** — people who want to know what's happening locally without the toxicity of social media. The dashboard with noise filtering and trend charts serves them.
-
-2. **Remote workers** — concerned about digital threats and home network security. The scam scanner and digital threat alerts are built for them.
-
-3. **Elderly users** — need simple, non-scary alerts. The elderly-friendly mode (bigger fonts, cleaner layout) and calm language throughout the app address this.
+The app is built in React, uses OpenAI GPT-3.5 for AI features, and is themed around cybersecurity with a dark mode interface. Every AI feature has a complete rule-based fallback, so the app works fully without an API key.
 
 ---
 
-## Technical Stack Decisions
+## 2. Target Audience
 
-### React 19 (To create React App)
-I went with CRA because it's the fastest way to get a working React app with zero config. For a timed challenge, spending time on build tooling didn't make sense. React's component model also made it easy to break the UI into tabs and reusable pieces.
+The problem statement defines three user groups. Here's how each is served:
 
-### OpenAI GPT-3.5 Turbo
-Chose 3.5 over 4 because it's cheaper and faster — for summarization and scam detection, the quality difference isn't worth the extra latency and cost. Every AI feature has a rule-based fallback so the app works fine without an API key.
+### Neighborhood Groups
+**Need:** Track local trends without social media toxicity  
+**Solution:** The Dashboard tab filters out noise (venting, off-topic posts) and shows only verified incidents with severity levels. The 7-Day Trend Chart tracks patterns. The Threat Radar gives a visual overview of all neighborhoods at once.
 
-### Inline Styles + JS Design Tokens
-Instead of CSS frameworks, I used a `styles.js` file with color tokens and reusable style objects. This kept everything in one language (JS) and made the cybersecurity theming consistent. No Tailwind, no CSS modules — just objects.
+### Remote Workers
+**Need:** Local network security and home safety awareness  
+**Solution:** The Scam Scanner lets them paste suspicious emails/texts for instant analysis. Digital threat alerts cover phishing, data breaches, and ransomware. The AI Chat answers specific security questions.
 
-### Jest + React Testing Library
-Comes built into CRA. I wrote 7 tests covering the critical logic: noise filtering, scam detection patterns, and safety score calculation.
-
-### Synthetic JSON Data
-25 hand-written incident reports set in Buffalo, NY neighborhoods. Each has a type (digital/physical), location, date, and realistic description. Some are intentionally "noisy" (off-topic posts) to test the filtering.
+### Elderly Users
+**Need:** Simplified, non-scary alerts about scams and hazards  
+**Solution:** The Elderly Mode toggle (👁️ A+ button in navbar) increases all font sizes across the app for readability. The language throughout is calm and empowering — never alarming. Action checklists give clear, simple steps.
 
 ---
 
-## Architecture
+## 3. Architecture
 
 ```
-User Interface (App.jsx)
-    │
-    ├── Design System (styles.js)
-    │     Colors, glassmorphism, typography tokens
-    │
-    ├── Business Logic (helpers.js)
-    │     ├── AI calls (OpenAI API)
-    │     ├── Rule-based fallbacks
-    │     ├── Safety score calculation
-    │     ├── Trend data aggregation
-    │     └── Threat forecasting
-    │
-    └── Data Layer (sample_incidents.json)
-          25 synthetic Buffalo NY reports
+┌─────────────────────────────────────────────┐
+│              User Interface                  │
+│              App.jsx (640 lines)             │
+│                                              │
+│   ┌──────────┐  ┌───────────┐  ┌──────────┐ │
+│   │Dashboard │  │Threat     │  │Scam      │ │
+│   │Tab       │  │Radar Tab  │  │Scanner   │ │
+│   ├──────────┤  ├───────────┤  ├──────────┤ │
+│   │Safe      │  │Reports    │  │Locations │ │
+│   │Circles   │  │Tab (CRUD) │  │Tab       │ │
+│   └──────────┘  └───────────┘  └──────────┘ │
+│                                              │
+│   ┌──────────────────┐  ┌─────────────────┐  │
+│   │Floating AI Chat  │  │Elderly Mode     │  │
+│   └──────────────────┘  └─────────────────┘  │
+└──────────────┬──────────────────┬────────────┘
+               │                  │
+    ┌──────────▼──────────┐  ┌───▼────────────┐
+    │   helpers.js        │  │   styles.js    │
+    │                     │  │                │
+    │ • getAIDigest()     │  │ • colors       │
+    │ • detectScamAI()    │  │ • glass        │
+    │ • getAIForecast()   │  │ • input/label  │
+    │ • askAssistant()    │  │ • sevConfig    │
+    │ • ruleBasedFilter() │  │ • elderlyMode  │
+    │ • ruleBasedScamChk()│  └────────────────┘
+    │ • ruleBasedForecast│
+    │ • calcSafetyScore() │
+    │ • getTrendData()    │
+    └──────────┬──────────┘
+               │
+    ┌──────────▼──────────┐
+    │  sample_incidents   │
+    │  .json (25 records) │
+    └─────────────────────┘
 ```
 
-Everything runs client-side. There's no backend — state lives in React's `useState` and resets on refresh. This was a deliberate tradeoff to focus on the AI features and UI within the time limit.
+### Why this structure?
+- **App.jsx** — Single component handles all UI. For a 5-hour challenge, splitting into 15 component files adds overhead without benefit. Everything is in tabs, easy to navigate.
+- **helpers.js** — All business logic extracted here. AI calls, rule-based fallbacks, scoring, trend calculation. This makes the logic testable independent of React.
+- **styles.js** — Design tokens (colors, glassmorphism, input styles) in one file. Change `colors.green` once, it updates everywhere.
+- **sample_incidents.json** — Synthetic data layer. 25 records, each with id, type, raw text, location, and date.
+
+### Data flow
+1. App loads 25 incidents from JSON into React state
+2. User selects a location → safety score and trend chart update
+3. User clicks "Analyze Threats" → app calls OpenAI API (or falls back to rule-based filter)
+4. Filtered results render as cards with severity badges, summaries, and action steps
+5. User can create/edit/delete/search reports — all update the same state array
 
 ---
 
-## Design Choices
+## 4. Design Choices
 
 ### Cybersecurity Theme
-Dark background with matrix green (#00ff88) and cyan (#00e5ff) accents. JetBrains Mono monospace font gives it a "terminal" feel. The background has animated elements — binary rain, hex grid pattern, floating security icons, and circuit board traces — to reinforce the security theme without being distracting.
+- **Colors:** Dark background (#0a0f0a), matrix green (#00ff88), cyan (#00e5ff), purple (#a855f7)
+- **Typography:** JetBrains Mono monospace font — gives a "terminal" feel
+- **Cards:** Glassmorphism with semi-transparent backgrounds, subtle borders, backdrop blur
+- **Background effects:** Binary rain (0s and 1s falling), hex grid pattern, floating security icons (🔒🛡️), circuit board traces with SVG, scan-line animation
+- **Why:** The theme reinforces the security/safety purpose of the app. Users instantly understand this is a security tool.
 
-### Glassmorphism Cards
-Each section uses semi-transparent cards with subtle borders and backdrop blur. This creates visual depth and keeps the dark theme from feeling flat.
-
-### Calm Tone
-The app deliberately avoids alarming language. Safety scores are encouraging ("Your area is relatively safe"), action steps are empowering, and severity colors are muted rather than screaming red.
+### Calm, Empowering Tone
+- Never says "DANGER" or "WARNING" in alarming ways
+- Safety scores feel informative, not scary (74/100 reads as "mostly safe")
+- Every alert comes with actionable steps the user can take
+- Noise filtering removes panicky community posts, only showing verified information
+- This directly addresses the **Anxiety Reduction** success metric
 
 ### Elderly-Friendly Mode
-A toggle in the navbar that increases font sizes across the entire app. This directly serves the elderly user persona from the problem statement.
+- A single toggle (👁️ A+ in navbar) increases font sizes across every element
+- Bigger buttons, more readable text, higher contrast
+- Serves the elderly target audience from the problem statement
+
+### Location-Based Everything
+- Dashboard, safety score, trend chart — all filtered by selected location
+- 10 Buffalo NY neighborhoods as default locations
+- Users can add custom locations too
+- This addresses the **Contextual Relevance** success metric
 
 ---
 
-## AI Integration
+## 5. AI Integration — Detailed Breakdown
 
-### 1. Noise-to-Signal Filtering (Summarize + Categorize)
-The core feature. GPT reads all community reports for a location and:
-- Filters out venting, off-topic posts, and noise
-- Assigns severity (high/medium/low) to real threats
-- Generates 1-sentence summaries
-- Creates actionable defense checklists
+### How AI is used (4 capabilities)
 
-**Fallback:** Keyword matching against noise words (lol, pizza, omg) and action words (phishing, breach, scam). Assigns severity based on regex patterns.
+| Capability | Feature | What the AI does | Fallback |
+|-----------|---------|-----------------|----------|
+| **Summarize** | Dashboard filter | Reads all reports, generates 1-sentence summaries | Keeps original text |
+| **Categorize** | Dashboard filter | Assigns severity (high/medium/low), separates noise from signal | Regex keyword matching |
+| **Extract** | Scam Scanner | Identifies red flags, verdict, confidence from suspicious text | Pattern matching (urgency, financial bait, phishing words) |
+| **Forecast** | Threat Radar | Predicts next 7 days of threats per location | Statistical analysis of incident counts and types |
 
-### 2. Scam Scanner (Extract)
-Users paste suspicious texts/emails. GPT analyzes them and returns:
-- Verdict: SCAM / SUSPICIOUS / LEGITIMATE
-- Confidence level
-- Red flags found
-- What to do next
+### Fallback design philosophy
+Instead of showing "AI unavailable" errors, every feature has a **complete rule-based alternative** that produces useful results. The UI shows a clear badge ("Rule-based" vs "AI-powered") so users always know which method was used. This means:
+- Judges can test every feature immediately without an API key
+- The app never breaks if the API is down
+- Users aren't left with zero information if AI fails
 
-**Fallback:** Checks for urgency words, financial bait terms, and phishing indicators. Counts flags to determine verdict.
-
-### 3. Threat Forecast (Forecast)
-Analyzes incident patterns across all locations and predicts:
-- Risk level per neighborhood for next 7 days
-- Overall trend (increasing/stable/decreasing)
-- Top risk area and emerging threats
-- AI insight (surprising pattern noticed)
-
-**Fallback:** Statistical analysis of incident counts, type ratios, and keyword presence to generate predictions.
-
-### 4. AI Chat Assistant
-Context-aware chatbot that knows about recent local incidents. Users can ask questions like "is it safe to walk downtown?" and get informed answers.
+### API key handling
+- Key stored in `.env` file as `REACT_APP_OPENAI_KEY`
+- `.env` is in `.gitignore` — never committed
+- `.env.example` contains placeholder text only
+- If key is missing, app silently uses fallbacks
 
 ---
 
-## Key Features Deep Dive
+## 6. Feature Deep Dives
 
-### Threat Radar
-Interactive SVG visualization that plots all neighborhoods on a radar display. Each node is:
-- Sized by incident count
-- Colored by risk level (green/amber/red)
-- Animated with pulse rings for high-risk areas
-- Connected to a center hub with lines
+### Threat Radar (standout feature)
+An interactive SVG radar visualization that shows ALL neighborhoods at once:
+- Each neighborhood is a node positioned around a central hub
+- **Node size** scales with incident count
+- **Node color** indicates risk: green (low), amber (medium), red (high)
+- **Pulse rings** animate around medium/high risk areas
+- **Connection lines** from each node to the center hub
+- **Rotating sweep line** like a real radar display
+- **Labels** show location name, report count, and safety score
 
-A sweep line rotates continuously like a real radar. This was my standout feature — it gives an immediate visual overview of the entire city's threat landscape.
+Below the radar: AI Threat Forecast button that generates 7-day predictions, showing overall trend, top risk area, and an AI insight. This combines visual impact with practical predictive value.
 
-### Safety Score
-Formula: starts at 95, penalizes based on:
-- Number of incidents at that location
-- How recent they are (last 7 days weighted more)
-- Severity (breach = 12pts, phishing = 8pts, minor = 5pts)
-
-Displayed as an animated SVG arc gauge.
+### Safety Score Algorithm
+```
+Base score: 95
+For each incident at the location:
+  - Calculate recency (1.0 for today, 0.2 for 7+ days old)
+  - Determine severity weight:
+      breach/ransomware = 12 points
+      phishing/scam/fake = 8 points
+      other = 5 points
+  - Penalty = severity × recency
+Final score: max(5, min(95, 95 - total_penalty))
+```
+Displayed as an animated SVG arc gauge with color gradient.
 
 ### Emergency Broadcast
-One-tap buttons ("I NEED HELP" / "I'M SAFE") that instantly send to ALL Safe Circles. No typing required — critical for actual emergencies.
-
-### Safe Circles
-Trusted contact groups with status updates. Messages show an "encrypted" badge. In a production version, I'd use the Web Crypto API for real E2E encryption.
+"I NEED HELP" and "I'M SAFE" buttons that work without typing a name (defaults to "EMERGENCY"). One tap sends to ALL Safe Circles simultaneously. Designed for real emergencies where typing isn't practical.
 
 ---
 
-## Testing Strategy
+## 7. Testing Strategy
 
-7 unit tests covering:
-- `ruleBasedFilter` — keeps real alerts, removes noise, assigns correct severity
-- `ruleBasedScamCheck` — catches obvious scam patterns, passes clean messages
-- `calcSafetyScore` — high score for safe areas, lower score for incident-heavy areas
+7 unit tests in `App.test.js`:
 
-All tests passed. I focused testing on the logic layer (helpers.js) since that's where bugs would cause the most damage.
+| Test | Type | What it verifies |
+|------|------|-----------------|
+| `ruleBasedFilter` keeps actionable alerts | Happy path | Phishing/breach reports are preserved |
+| `ruleBasedFilter` removes off-topic noise | Edge case | Posts about pizza/coffee are filtered out |
+| `ruleBasedFilter` assigns correct severity | Happy path | "breach" → high, "phishing" → medium |
+| `ruleBasedScamCheck` detects scam patterns | Happy path | Messages with "act now" + "gift card" → SCAM |
+| `ruleBasedScamCheck` handles legit messages | Edge case | Normal text → LEGITIMATE |
+| `calcSafetyScore` returns high for safe area | Happy path | Location with no incidents → 95 |
+| `calcSafetyScore` returns low for risky area | Edge case | Location with recent breaches → lower score |
 
-## Tradeoffs & Decisions
+**Why I focused on `helpers.js`:** This is where the logic lives. If filtering breaks, users see wrong data. If scoring breaks, safety scores are misleading. UI rendering is less likely to have subtle bugs.
 
-### Client-side only (no backend)
-I skipped building a backend entirely. Data lives in React state and resets on refresh. This let me spend all my time on the AI features and UI instead of wiring up Express + Postgres. For a demo, it works — but production would obviously need persistence.
+---
+
+## 8. Data Design
+
+25 synthetic incident reports in `sample_incidents.json`. Each record:
+```json
+{
+  "id": 1,
+  "type": "digital",
+  "raw": "Phishing emails targeting KeyBank customers in Elmwood Village area",
+  "location": "Elmwood Village",
+  "date": "2026-03-03"
+}
+```
+
+**Design decisions:**
+- Set in **Buffalo, NY** with real neighborhoods (Elmwood Village, Allentown, North Buffalo, etc.)
+- Mix of **digital** (phishing, ransomware, scams) and **physical** (theft, break-ins, suspicious activity)
+- Some intentionally **noisy** records ("LOL anyone else love the new coffee shop?") to test the AI filter
+- Dates span **5 days** (March 3-7) so the trend chart has meaningful variation
+- All hand-written — no scraped data
+
+---
+
+## 9. Tradeoffs & Decisions
+
+### Client-side only — no backend
+I skipped building a backend. Data lives in `useState` and resets on refresh. This freed up time to build 4 AI features, the threat radar, and the cybersecurity theme. For a demo, this works fine. Production would need PostgreSQL + Express.
 
 ### GPT-3.5 instead of GPT-4
-GPT-4 would give better analysis, but 3.5 is 10x cheaper and responds faster. For summarizing community reports and checking scam texts, the quality gap isn't big enough to justify the cost and latency.
+3.5 is 10x cheaper and responds faster. For summarizing community posts and checking scam patterns, the quality gap doesn't justify the cost. If this were production, I'd probably use 4 for the scam scanner where accuracy matters more.
 
 ### No real encryption
-Safe Circles shows "encrypted" badges but it's not actually encrypted. Real E2E encryption with Web Crypto API would take significant time to implement properly. I flagged this clearly in the UI rather than pretending it's secure.
+Safe Circles shows "encrypted" badges but uses no actual encryption. Web Crypto API would take significant time to implement correctly, and the feature was lower priority than AI + visualization. I made this explicit in the UI rather than pretending it's secure.
 
 ### No authentication
-There's no login system. Every user sees the same data. I prioritized the AI and visualization features over auth since the demo is single-user anyway.
+No login system — everyone sees the same data. I prioritized the AI features and radar visualization over auth infrastructure, since this is a single-user demo.
 
-### Inline styles instead of CSS framework
-Tailwind or styled-components would scale better, but inline styles with a shared token file were faster to set up and kept theming dead simple for a single-component app.
+### Inline styles over CSS framework
+Tailwind or styled-components would scale better in a larger app, but inline styles with shared tokens in `styles.js` were the fastest path to a consistent theme. For a single-component app with one design system, it works.
 
-### Rule-based fallbacks over graceful degradation
-Instead of just showing "AI unavailable" errors, I built full rule-based alternatives for every AI feature. This means the app is fully functional even without an API key — judges can test everything immediately.
-
-### Dropdown locations instead of geolocation
-Real GPS-based location detection would be better UX, but the Geolocation API needs HTTPS and user permissions which add friction in a demo. Dropdowns are instant and reliable.
+### Rule-based fallbacks over "try again" errors
+Instead of showing "AI unavailable, try again later", I built complete rule-based alternatives. More work upfront, but it means the app is 100% functional for anyone testing it, whether they have an API key or not.
 
 ---
 
-## What I'd Do Differently With More Time
+## 10. Security Practices
 
-- Add a PostgreSQL backend for data persistence
-- Implement real E2E encryption with Web Crypto API
-- Add push notifications for new alerts in your area
-- Use the Geolocation API for automatic location detection
-- Build a community upvote system so users can verify reports
-- Make it a PWA for offline access
-- Add an admin moderation dashboard
+| Practice | Implementation |
+|----------|---------------|
+| API key protection | `.env` file, listed in `.gitignore`, never committed |
+| `.env.example` | Contains placeholder text `your_openai_api_key_here` only |
+| No real user data | All 25 records are synthetic/hand-written |
+| No tracking | No analytics, no cookies, no external tracking scripts |
+| Client-side only | No backend server storing or transmitting user data |
+| Input sanitization | React's built-in XSS protection via JSX escaping |
+
+---
+
+## 11. What I'd Build Next
+
+If I had more time:
+- **PostgreSQL backend** — persistent data so reports don't disappear on refresh
+- **Real E2E encryption** — Web Crypto API for Safe Circles messages
+- **Push notifications** — alert users when new incidents match their area
+- **Geolocation API** — auto-detect user's neighborhood instead of dropdown
+- **Community voting** — let users upvote/verify reports to crowdsource accuracy
+- **PWA** — offline access and mobile-app-like experience
+- **Admin dashboard** — moderation tools for community managers
